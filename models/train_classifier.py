@@ -18,6 +18,19 @@ from sklearn.multioutput import MultiOutputClassifier
 import pickle
 
 def load_data(database_filepath):
+    '''
+    load_data
+    loads data from the database file to dataframe 
+    and seperates train and target data into seperate dataframes
+
+    Input:
+    database_filepath - filepath to the database file
+
+    Returns:
+    X - dataframe containing messages in a column
+    y - dataframe containing 36 category variabls
+    category_names - list having names of the category variables
+    '''
     engine = create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql_table('DisasterResponse', engine)
     X = df.message
@@ -28,6 +41,17 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    '''
+    tokenize
+    teakes a text message and takenize and lemmatize the message
+    
+
+    Input:
+    text - text message
+
+    Returns:
+    clean_tokens - list of tokens after lemmatization
+    '''
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
@@ -45,6 +69,16 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    build_model
+    builds a model by crearting a pipeline and tunes the same using gridserachcv
+
+    Input:
+    None
+
+    Returns:
+    model - model object
+    '''
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -61,11 +95,36 @@ def build_model():
 
 
 def evaluate_model(model, X_test, y_test, category_names):
+    '''
+    build_model
+    executes a pipeline built in the model object on test variables 
+    predicts a class of a message and displays a performance report of a model 
+
+    Input:
+    model - trained model object 
+    X_test - dataframe of messages data to be classified
+    y_test - dataframe of actual classes of the given messages for testing 
+    category_names - list of target categories 
+
+    Returns:
+    None
+    '''
     y_pred = model.predict(X_test)
     class_report = classification_report(y_test, y_pred, target_names=category_names)
     print(class_report)
 
 def save_model(model, model_filepath):
+    '''
+    save_model
+    saves a trained model object in a pickle file for further use
+
+    Input:
+    model - trained model object 
+    model_filepath - filepath to picke file where the model to be stored
+
+    Returns:
+    None
+    '''
     with open(model_filepath, 'wb') as file:
         pickle.dump(model, file)
 
